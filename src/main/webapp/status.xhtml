@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Real-Time Status Tracker | Verif</ui:define>
+
+    <ui:define name="content">
+        <!-- New Submission Entry Banner -->
+        <h:panelGroup layout="block" rendered="#{profileStatusBean.newSubmission and profileStatusBean.currentProfile != null}" 
+                      styleClass="bento-card entry-banner" 
+                      style="background: var(--v-warn-soft); border-color: rgba(245, 158, 11, 0.3);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="icon-box icon-box-lg icon-box-warn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="16" x="2" y="4" rx="2"/>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-warn" style="font-size: 1.05rem; font-weight: 700; margin: 0;">Verification Pending</h3>
+                        <p class="text-2" style="font-size: 0.84rem; margin: 0.2rem 0 0 0;">
+                            Your profile has been saved. An email confirmation has been dispatched to 
+                            <strong>#{profileStatusBean.currentProfile.email}</strong> with your tracking reference.
+                        </p>
+                    </div>
+                </div>
+                <span class="badge badge-pending">
+                    <span class="badge-dot"></span> Status: Verification Pending
+                </span>
+            </div>
+        </h:panelGroup>
+
+        <!-- Tracking Code Lookup Form -->
+        <div class="bento-card entry-banner">
+            <div class="bento-header">
+                <div class="bento-title-group">
+                    <div class="bento-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="bento-title">Lookup Profile Verification</h2>
+                        <p class="bento-subtitle">Enter your tracking code (e.g., VRF-2026-XXXXX)</p>
+                    </div>
+                </div>
+
+                <h:panelGroup rendered="#{profileStatusBean.pollEnabled}">
+                    <span class="text-4" style="font-size: 0.78rem;">
+                        Live · auto-refreshed at <strong>#{profileStatusBean.lastUpdatedTime}</strong>
+                    </span>
+                </h:panelGroup>
+            </div>
+
+            <h:form id="lookupForm" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 260px;">
+                    <h:outputLabel styleClass="form-label" for="searchCode" value="Tracking Reference Code" />
+                    <h:inputText id="searchCode" value="#{profileStatusBean.searchCode}" 
+                                 styleClass="form-input" 
+                                 placeholder="VRF-2026-..." />
+                </div>
+                <h:commandButton value="Check Status" action="#{profileStatusBean.lookupProfile}" 
+                                 styleClass="btn btn-primary">
+                    <f:ajax execute="@form" render=":statusContainer :lookupForm" />
+                </h:commandButton>
+            </h:form>
+        </div>
+
+        <!-- Real-Time Auto-Refresh Polling Form (polls every 8 seconds)
+             BUGFIX: previously always rendered, so every visitor fired an Ajax
+             request every 6 seconds even with no profile loaded. It is now only
+             emitted once a profile has been resolved, and it is triggered via
+             verifPoll() so the background request never shows the screen loader. -->
+        <h:form id="pollingForm" style="display: none;" rendered="#{profileStatusBean.pollEnabled}">
+            <h:commandButton id="pollBtn" action="#{profileStatusBean.pollStatus}">
+                <f:ajax execute="@this" render=":statusContainer" />
+            </h:commandButton>
+        </h:form>
+
+        <script>
+            // Real-time polling timer executing every 8 seconds without full page reload
+            setInterval(function () {
+                verifPoll('pollingForm:pollBtn');
+            }, 8000);
+        </script>
+
+        <!-- Status Container (Updated dynamically via Ajax) -->
+        <h:panelGroup id="statusContainer" layout="block">
+
+            <h:panelGroup rendered="#{profileStatusBean.currentProfile != null}">
+                <div class="bento-grid">
+
+                    <!-- Bento Card: Main Status Summary (Col 8) -->
+                    <div class="bento-card col-8">
+                        <div class="bento-header">
+                            <div class="bento-title-group">
+                                <div class="bento-icon">
+                                    VRF
+                                </div>
+                                <div>
+                                    <h2 class="bento-title">#{profileStatusBean.currentProfile.fullName}</h2>
+                                    <p class="bento-subtitle">Ref: <strong class="text-strong">#{profileStatusBean.currentProfile.trackingCode}</strong></p>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Status Badges -->
+                            <h:panelGroup rendered="#{profileStatusBean.pending}">
+                                <span class="badge badge-pending">
+                                    <span class="badge-dot"></span> #{profileStatusBean.currentProfile.verificationStatus.displayName}
+                                </span>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{profileStatusBean.verified}">
+                                <span class="badge badge-verified">
+                                    <span class="badge-dot"></span> #{profileStatusBean.currentProfile.verificationStatus.displayName}
+                                </span>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{profileStatusBean.rejected}">
+                                <span class="badge badge-rejected">
+                                    <span class="badge-dot"></span> #{profileStatusBean.currentProfile.verificationStatus.displayName}
+                                </span>
+                            </h:panelGroup>
+                        </div>
+
+                        <!-- Interactive Timeline Progression -->
+                        <div class="timeline">
+                            <!-- Step 1 -->
+                            <div class="timeline-step completed">
+                                <div class="timeline-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <span class="timeline-label">Application Submitted</span>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="timeline-step #{profileStatusBean.pending ? 'active' : 'completed'}">
+                                <div class="timeline-icon">
+                                    <h:panelGroup rendered="#{profileStatusBean.pending}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{not profileStatusBean.pending}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </h:panelGroup>
+                                </div>
+                                <span class="timeline-label">Under Admin Review</span>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="timeline-step #{profileStatusBean.timelineStep == 3 ? (profileStatusBean.verified ? 'completed' : (profileStatusBean.rejected ? 'rejected' : 'active')) : ''}">
+                                <div class="timeline-icon">
+                                    <h:panelGroup rendered="#{profileStatusBean.verified}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{profileStatusBean.rejected}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{profileStatusBean.pending}">
+                                        3
+                                    </h:panelGroup>
+                                </div>
+                                <span class="timeline-label">
+                                    #{profileStatusBean.verified ? 'Verified and Approved' : (profileStatusBean.rejected ? 'Cancelled' : 'Decision')}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Verification Pending Details Alert -->
+                        <h:panelGroup rendered="#{profileStatusBean.pending}">
+                            <div style="background: var(--v-warn-soft); border-left: 3px solid var(--v-warn-solid); padding: 1rem; border-radius: 8px; margin-top: 1.5rem;">
+                                <strong class="text-warn" style="font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">Verification In Progress</strong>
+                                <p class="text-2" style="font-size: 0.82rem; margin: 0;">
+                                    Your application is currently awaiting administrative inspection. You will receive an automated email as soon as a determination is made.
+                                </p>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Profile Verified Congratulatory Details -->
+                        <h:panelGroup rendered="#{profileStatusBean.verified}">
+                            <div style="background: var(--v-ok-soft); border-left: 3px solid var(--v-ok-solid); padding: 1rem; border-radius: 8px; margin-top: 1.5rem;">
+                                <strong class="text-ok" style="font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">Verification Approved</strong>
+                                <p class="text-2" style="font-size: 0.82rem; margin: 0;">
+                                    Official identification authenticated on <strong>#{profileStatusBean.formattedVerifiedAt}</strong>. 
+                                    A verification certificate has been dispatched to your email.
+                                </p>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Profile Rejected / Cancelled Details with Administrative Reason -->
+                        <h:panelGroup rendered="#{profileStatusBean.rejected}">
+                            <div style="background: var(--v-danger-soft); border-left: 3px solid var(--v-danger-solid); padding: 1rem; border-radius: 8px; margin-top: 1.5rem;">
+                                <strong class="text-danger" style="font-size: 0.88rem; display: block; margin-bottom: 0.35rem;">Verification Cancelled by Administrator</strong>
+                                <p class="text-strong" style="font-size: 0.82rem; font-style: italic; margin-bottom: 0.5rem;">
+                                    "#{profileStatusBean.currentProfile.rejectionReason}"
+                                </p>
+                                <span class="text-3" style="font-size: 0.75rem;">
+                                    Cancelled at: #{profileStatusBean.formattedVerifiedAt}. You may re-apply with corrected credentials.
+                                </span>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- Bento Card: Profile Details & Document Reference (Col 4) -->
+                    <div class="bento-card col-4">
+                        <div class="bento-header">
+                            <div class="bento-title-group">
+                                <div class="bento-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="bento-title">Credential Details</h3>
+                                    <p class="bento-subtitle">Submitted metadata</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.5rem;">
+                            <div>
+                                <span class="text-4" style="display: block;">Document Type:</span>
+                                <strong class="text-strong">#{profileStatusBean.currentProfile.idType.label}</strong>
+                            </div>
+                            <div>
+                                <span class="text-4" style="display: block;">Document Serial:</span>
+                                <strong class="text-strong">#{profileStatusBean.currentProfile.idNumber}</strong>
+                            </div>
+                            <div>
+                                <span class="text-4" style="display: block;">Occupation:</span>
+                                <strong class="text-strong">#{profileStatusBean.currentProfile.occupation}</strong>
+                            </div>
+                            <div>
+                                <span class="text-4" style="display: block;">Registered Email:</span>
+                                <strong class="text-strong" style="word-break: break-all;">#{profileStatusBean.currentProfile.email}</strong>
+                            </div>
+                            <div>
+                                <span class="text-4" style="display: block;">Submission Timestamp:</span>
+                                <strong class="text-2">#{profileStatusBean.formattedCreatedAt}</strong>
+                            </div>
+                            <div style="border-top: 1px solid var(--v-border-soft); padding-top: 0.75rem;">
+                                <span class="text-4" style="display: block; font-size: 0.75rem;">Cryptographic Token Reference:</span>
+                                <code class="code-chip">#{profileStatusBean.currentProfile.documentReference}</code>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </h:panelGroup>
+
+            <!-- Idle state: no lookup performed yet (previously rendered nothing at all) -->
+            <h:panelGroup rendered="#{not profileStatusBean.searched and not profileStatusBean.newSubmission}">
+                <div class="bento-card empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state-title">Track an Existing Application</h3>
+                    <p class="empty-state-text">
+                        Enter the tracking reference from your confirmation email
+                        (for example <strong>VRF-2026-K92A1B</strong>) in the field above to view live verification status.
+                    </p>
+                </div>
+            </h:panelGroup>
+
+            <!-- No Profile Found State -->
+            <h:panelGroup rendered="#{profileStatusBean.searched and profileStatusBean.currentProfile == null}">
+                <div class="bento-card empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state-title">No Verification Profile Located</h3>
+                    <p class="empty-state-text" style="margin-bottom: 1.5rem;">
+                        We could not find an active profile matching tracking code <strong>"#{profileStatusBean.searchCode}"</strong>. 
+                        Please verify the code provided in your email confirmation.
+                    </p>
+                    <h:link outcome="/register.xhtml" styleClass="btn btn-primary">
+                        Submit a Profile for Verification
+                    </h:link>
+                </div>
+            </h:panelGroup>
+
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
+</html>

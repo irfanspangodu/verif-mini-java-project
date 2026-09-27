@@ -1,0 +1,133 @@
+/* ==========================================================================
+   VERIF - Full-Page Screen Loading UI (Lightweight: < 3 KB)
+   ========================================================================== */
+
+#verif-screen-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Active State Triggered during Ajax / Page Load */
+#verif-screen-loader.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 320px;
+  transform: translateY(6px);
+  transition: transform 0.3s ease;
+}
+
+#verif-screen-loader.active .loader-content {
+  transform: translateY(0);
+}
+
+/* Pulsing Brand Core */
+.loader-brand-container {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-glow-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  border-top-color: #FAFAFA;
+  border-right-color: #34D399;
+  animation: spin-ring 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.loader-brand-emblem {
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.45)) drop-shadow(0 0 32px rgba(16, 185, 129, 0.32));
+  animation: pulse-core 2s ease-in-out infinite;
+  z-index: 2;
+}
+
+.loader-emblem-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.loader-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #FAFAFA;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.35rem;
+}
+
+.loader-status-text {
+  font-size: 0.8rem;
+  color: #A1A1AA;
+  margin-bottom: 1.25rem;
+}
+
+/* Minimalist Horizontal Progress Line */
+.loader-progress-track {
+  width: 160px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loader-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 45%;
+  background: linear-gradient(90deg, #FFFFFF, #A1A1AA);
+  border-radius: 3px;
+  animation: progress-slide 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes spin-ring {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-core {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(0.96); filter: brightness(1.2); }
+}
+
+@keyframes progress-slide {
+  0% { left: -45%; width: 30%; }
+  50% { width: 60%; }
+  100% { left: 100%; width: 30%; }
+}

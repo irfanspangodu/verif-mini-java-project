@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Verif Profile Verification System</display-name>
+
+    <welcome-file-list>
+        <welcome-file>index.xhtml</welcome-file>
+    </welcome-file-list>
+
+    <!--
+        NOTE: The FacesServlet is registered programmatically by JoinFaces
+        (joinfaces.faces-servlet.url-mappings in application.properties) and the
+        Facelets/Mojarra context parameters are applied by JsfConfig.
+
+        BUGFIX: this descriptor previously ALSO declared "Faces Servlet" with the
+        same url-patterns (*.xhtml, *.jsf, /faces/*). Deploying the WAR to an
+        external container (Tomcat 10+/WildFly) therefore registered two servlets
+        on identical mappings and failed startup with
+        "IllegalArgumentException: The servlets named [Faces Servlet] and
+        [facesServlet] are both mapped to the url-pattern [*.xhtml]".
+        Declaring them twice is now avoided in favour of the single JoinFaces
+        registration.
+    -->
+
+</web-app>

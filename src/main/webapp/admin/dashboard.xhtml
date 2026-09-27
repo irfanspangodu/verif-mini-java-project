@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Admin Verification Command Center | Verif</ui:define>
+
+    <ui:define name="content">
+        <!-- Dashboard Header Bento Banner -->
+        <div class="bento-card entry-banner" style="padding: 1.5rem 1.75rem !important;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="brand-glyph" style="width: 44px; height: 44px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="bento-title" style="font-size: 1.35rem;">Verification Command Center</h1>
+                        <p class="bento-subtitle">Real-time applicant moderation, verification approvals, and cancellation management</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <span class="badge badge-verified">
+                        <span class="badge-dot"></span> Live Polling Active
+                    </span>
+
+                    <h:form id="manualRefreshForm">
+                        <h:commandButton value="Refresh" action="#{adminDashboardBean.refreshDashboard}" 
+                                         styleClass="btn btn-secondary btn-sm">
+                            <f:ajax render=":adminStatsForm :adminPendingForm :adminHistoryForm :adminEmailForm" />
+                        </h:commandButton>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time Auto-Refresh Polling Form (Every 8 seconds)
+             BUGFIX: now triggered through verifPoll() so the background refresh no
+             longer flashes the blocking full-page loader, and it only refreshes the
+             KPI tiles, pending queue and tab counters so an administrator's scroll
+             position and active search are left undisturbed. -->
+        <h:form id="adminPollingForm" style="display: none;">
+            <h:commandButton id="autoPollBtn" action="#{adminDashboardBean.refreshDashboard}">
+                <f:ajax render=":adminStatsForm :adminPendingForm :adminTabsForm" />
+            </h:commandButton>
+        </h:form>
+
+        <script>
+            // Periodic background polling keeping dashboard metrics and pending queue fresh
+            setInterval(function () {
+                verifPoll('adminPollingForm:autoPollBtn');
+            }, 8000);
+        </script>
+
+        <!-- Dashboard Tab Bar (drives AdminDashboardBean.activeTab) -->
+        <h:form id="adminTabsForm">
+            <div class="tab-bar" style="margin-bottom: 1.25rem;">
+                <h:commandButton value="Pending Queue (#{adminDashboardBean.statistics.pendingProfiles})" 
+                                 action="#{adminDashboardBean.selectTab('pending')}" 
+                                 styleClass="tab #{adminDashboardBean.activeTab eq 'pending' ? 'active' : ''}">
+                    <f:ajax execute="@this" render=":adminTabsForm :dashboardPanels" />
+                </h:commandButton>
+                <h:commandButton value="Application Registry (#{adminDashboardBean.statistics.totalProfiles})" 
+                                 action="#{adminDashboardBean.selectTab('all')}" 
+                                 styleClass="tab #{adminDashboardBean.activeTab eq 'all' ? 'active' : ''}">
+                    <f:ajax execute="@this" render=":adminTabsForm :dashboardPanels" />
+                </h:commandButton>
+                <h:commandButton value="Email Outbox (#{adminDashboardBean.tabCount('emails')})" 
+                                 action="#{adminDashboardBean.selectTab('emails')}" 
+                                 styleClass="tab #{adminDashboardBean.activeTab eq 'emails' ? 'active' : ''}">
+                    <f:ajax execute="@this" render=":adminTabsForm :dashboardPanels" />
+                </h:commandButton>
+            </div>
+        </h:form>
+
+        <!-- Bento KPI Summary Cards -->
+        <h:form id="adminStatsForm">
+            <div class="bento-grid" style="margin-bottom: 1.5rem;">
+                <!-- Total Submissions (Col 3) -->
+                <div class="bento-card col-3">
+                    <div class="bento-header">
+                        <span class="bento-subtitle">Total Submissions</span>
+                        <div class="bento-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value">#{adminDashboardBean.statistics.totalProfiles}</div>
+                    <div class="kpi-meta">All registered profiles</div>
+                </div>
+
+                <!-- Pending Review (Col 3 - Amber Glow) -->
+                <div class="bento-card col-3" style="border-color: rgba(245, 158, 11, 0.3);">
+                    <div class="bento-header">
+                        <span class="bento-subtitle text-warn">Pending Verification</span>
+                        <div class="bento-icon icon-box-warn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value text-warn">#{adminDashboardBean.statistics.pendingProfiles}</div>
+                    <div class="kpi-meta">Requires admin action</div>
+                </div>
+
+                <!-- Verified Profiles (Col 3 - Emerald Glow) -->
+                <div class="bento-card col-3" style="border-color: rgba(16, 185, 129, 0.3);">
+                    <div class="bento-header">
+                        <span class="bento-subtitle text-ok">Verified Profiles</span>
+                        <div class="bento-icon icon-box-ok">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value text-ok">#{adminDashboardBean.statistics.verifiedProfiles}</div>
+                    <div class="kpi-meta">#{adminDashboardBean.statistics.verificationRate}% Approval Rate</div>
+                </div>
+
+                <!-- Cancelled / Rejected (Col 3 - Crimson Glow) -->
+                <div class="bento-card col-3" style="border-color: rgba(244, 63, 94, 0.3);">
+                    <div class="bento-header">
+                        <span class="bento-subtitle text-danger">Cancelled / Denied</span>
+                        <div class="bento-icon icon-box-danger">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value text-danger">#{adminDashboardBean.statistics.rejectedProfiles}</div>
+                    <div class="kpi-meta">With recorded reason</div>
+                </div>
+            </div>
+        </h:form>
+
+        <!-- Main Bento Grid Workspace: tabbed panels (wires up AdminDashboardBean.activeTab) -->
+        <h:panelGroup id="dashboardPanels" layout="block">
+
+            <!-- TAB: Pending Verification Queue -->
+            <div class="bento-grid" style="display: #{adminDashboardBean.activeTab eq 'pending' ? 'grid' : 'none'};">
+            <div class="bento-card col-12">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon icon-box-warn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="bento-title">Pending Verification Queue</h2>
+                            <p class="bento-subtitle">Inspect credentials and execute immediate verification or cancellation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h:form id="adminPendingForm">
+                    <h:panelGroup rendered="#{empty adminDashboardBean.pendingProfiles}">
+                        <div class="empty-state">
+                            <div class="empty-state-icon text-ok">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <h3 class="empty-state-title">Queue Clear</h3>
+                            <p class="empty-state-text">All submitted applications have been reviewed. New submissions will appear here automatically.</p>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{not empty adminDashboardBean.pendingProfiles}">
+                        <div class="bento-table-wrapper">
+                            <table class="bento-table">
+                                <thead>
+                                    <tr>
+                                        <th>Applicant</th>
+                                        <th>Tracking Ref</th>
+                                        <th>Contact</th>
+                                        <th>Document Details</th>
+                                        <th>Submitted</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{adminDashboardBean.pendingProfiles}" var="profile">
+                                        <tr>
+                                            <td>
+                                                <strong class="text-strong" style="display: block;">#{profile.fullName}</strong>
+                                                <span class="text-3" style="font-size: 0.75rem;">#{profile.occupation}</span>
+                                            </td>
+                                            <td>
+                                                <code class="code-chip" style="white-space: nowrap;">#{profile.trackingCode}</code>
+                                            </td>
+                                            <td>
+                                                <span class="text-2" style="display: block; word-break: break-all; max-width: 180px;">#{profile.email}</span>
+                                                <span class="text-3" style="font-size: 0.75rem; white-space: nowrap;">#{profile.phone}</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-strong" style="font-weight: 500; white-space: nowrap;">#{profile.idType.label}</span>
+                                                <span class="text-3" style="display: block; font-size: 0.75rem; word-break: break-all;">No: #{profile.idNumber}</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-2" style="font-size: 0.78rem; white-space: nowrap;">#{profile.formattedCreatedAt}</span>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; gap: 0.5rem; align-items: center; white-space: nowrap;">
+                                                    <!-- Verify Profile Action -->
+                                                    <h:commandButton value="Verify Profile" 
+                                                                     action="#{adminDashboardBean.verifyProfile(profile.id)}" 
+                                                                     styleClass="btn btn-success btn-sm">
+                                                        <f:ajax execute="@this" render=":adminPendingForm :adminHistoryForm :adminStatsForm :adminEmailForm :globalMessages" />
+                                                    </h:commandButton>
+
+                                                    <!-- Cancel / Reject Action (Opens modal) -->
+                                                    <h:commandButton value="Cancel Profile" 
+                                                                     action="#{adminDashboardBean.prepareReject(profile)}" 
+                                                                     styleClass="btn btn-danger btn-sm">
+                                                        <f:ajax execute="@this" render=":rejectModalForm" />
+                                                    </h:commandButton>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </h:panelGroup>
+                </h:form>
+            </div>
+
+            </div>
+
+            <!-- TAB: Automated Email Outbox -->
+            <div class="bento-grid" style="display: #{adminDashboardBean.activeTab eq 'emails' ? 'grid' : 'none'};">
+            <div class="bento-card col-12">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="bento-title">Automated Email Outbox</h2>
+                            <p class="bento-subtitle">Real-time audit log of dispatched notifications</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h:form id="adminEmailForm">
+                    <!-- Empty state shown when no notifications have been dispatched -->
+                    <h:panelGroup rendered="#{empty adminDashboardBean.recentEmails}">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            </div>
+                            <h3 class="empty-state-title">Outbox Empty</h3>
+                            <p class="empty-state-text">No notification emails have been dispatched yet. Registration, approval and cancellation notices are logged here automatically.</p>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{not empty adminDashboardBean.recentEmails}">
+                    <div class="bento-table-wrapper" style="max-height: 520px;">
+                        <table class="bento-table">
+                            <thead>
+                                <tr>
+                                    <th>Recipient</th>
+                                    <th>Category</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Sent At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{adminDashboardBean.recentEmails}" var="email">
+                                    <tr>
+                                        <td style="max-width: 140px; word-break: break-all;">
+                                            <span class="text-strong" style="font-weight: 600; display: block; font-size: 0.78rem;">#{email.recipientEmail}</span>
+                                            <span class="text-4" style="font-size: 0.7rem;">Role: #{email.recipientRole}</span>
+                                        </td>
+                                        <td style="white-space: nowrap;">
+                                            <span class="email-chip" style="background: #{email.emailType.softBgColor}; border-color: #{email.emailType.borderColor}; color: #{email.emailType.accentTextColor};">
+                                                #{email.emailType.displayLabel}
+                                            </span>
+                                        </td>
+                                        <td style="word-break: break-word;">
+                                            <span class="text-2" style="font-size: 0.78rem;">#{email.subject}</span>
+                                        </td>
+                                        <td style="white-space: nowrap;">
+                                            <span class="badge badge-verified" style="font-size: 0.65rem; padding: 2px 6px;">
+                                                #{email.status}
+                                            </span>
+                                        </td>
+                                        <td class="text-4" style="white-space: nowrap; font-size: 0.72rem;">
+                                            #{email.formattedSentAt}
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </div>
+                    </h:panelGroup>
+                </h:form>
+            </div>
+
+            </div>
+
+            <!-- TAB: Application Registry (with live search) -->
+            <div class="bento-grid" style="display: #{adminDashboardBean.activeTab eq 'all' ? 'grid' : 'none'};">
+            <div class="bento-card col-12">
+                <div class="bento-header" style="flex-wrap: wrap; gap: 0.85rem;">
+                    <div class="bento-title-group">
+                        <div class="bento-icon icon-box-ok">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="bento-title">Application Registry</h2>
+                            <p class="bento-subtitle">Complete historical archive of all submissions</p>
+                        </div>
+                    </div>
+
+                    <!-- Registry search - backed by ProfileService.searchProfiles() -->
+                    <h:form id="adminSearchForm" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                        <h:inputText id="searchQuery" value="#{adminDashboardBean.searchQuery}"
+                                     styleClass="form-input" style="min-width: 230px;"
+                                     placeholder="Search name, email or tracking code"
+                                     onkeydown="if (event.key === 'Enter') { event.preventDefault(); document.getElementById('adminSearchForm:searchBtn').click(); }" />
+                        <h:commandButton id="searchBtn" value="Search" action="#{adminDashboardBean.searchProfiles}"
+                                         styleClass="btn btn-secondary btn-sm">
+                            <f:ajax execute="@form" render=":adminHistoryForm :adminSearchForm :globalMessages" />
+                        </h:commandButton>
+                        <h:commandButton value="Clear Filter" action="#{adminDashboardBean.clearSearch}"
+                                         styleClass="btn btn-secondary btn-sm"
+                                         rendered="#{adminDashboardBean.searchActive}">
+                            <f:ajax execute="@this" render=":adminHistoryForm :adminSearchForm :globalMessages" />
+                        </h:commandButton>
+                    </h:form>
+                </div>
+
+                <h:form id="adminHistoryForm">
+                    <!-- Empty states: distinguish "no results for filter" from "no data at all" -->
+                    <h:panelGroup rendered="#{empty adminDashboardBean.allProfiles}">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            </div>
+                            <h3 class="empty-state-title">
+                                #{adminDashboardBean.searchActive ? 'No Matching Profiles' : 'No Profiles Registered'}
+                            </h3>
+                            <p class="empty-state-text">
+                                #{adminDashboardBean.searchActive 
+                                    ? 'No applicant matched the current search filter. Try a different name, email or tracking code.'
+                                    : 'No applicant profiles have been submitted to the registry yet.'}
+                            </p>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{not empty adminDashboardBean.allProfiles}">
+                    <div class="bento-table-wrapper" style="max-height: 520px;">
+                        <table class="bento-table">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Status</th>
+                                    <th>Action Log</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{adminDashboardBean.allProfiles}" var="item">
+                                    <tr>
+                                        <td style="max-width: 140px; word-break: break-word;">
+                                            <strong class="text-strong" style="display: block; font-size: 0.82rem;">#{item.fullName}</strong>
+                                            <code class="text-3" style="font-size: 0.72rem;">#{item.trackingCode}</code>
+                                        </td>
+                                        <td style="white-space: nowrap;">
+                                            <span class="badge #{item.verificationStatus.badgeClass}" style="font-size: 0.7rem; padding: 2px 7px;">
+                                                <span class="badge-dot"></span> #{item.verificationStatus.displayName}
+                                            </span>
+                                        </td>
+                                        <td style="word-break: break-word;">
+                                            <h:panelGroup rendered="#{item.verificationStatus eq 'REJECTED'}">
+                                                <span class="log-rejected">
+                                                    Reason: "#{item.rejectionReason}"
+                                                </span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{item.verificationStatus eq 'VERIFIED'}">
+                                                <span class="log-verified">
+                                                    Verified: #{item.formattedVerifiedAt}
+                                                </span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{item.verificationStatus eq 'PENDING'}">
+                                                <span class="log-pending">
+                                                    Awaiting review
+                                                </span>
+                                            </h:panelGroup>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </div>
+                </h:form>
+            </div>
+            </div>
+
+        </h:panelGroup>
+
+        <!-- Cancellation / Rejection Modal Overlay -->
+        <h:form id="rejectModalForm">
+            <h:panelGroup layout="block" rendered="#{adminDashboardBean.showRejectModal}" styleClass="modal-overlay">
+                <div class="modal-dialog">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <div class="icon-box icon-box-danger" style="width: 36px; height: 36px; border-radius: 10px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-strong" style="font-size: 1.1rem; margin: 0;">Cancel Profile Verification</h3>
+                            <p class="text-3" style="font-size: 0.8rem; margin: 0.15rem 0 0 0;">
+                                Applicant: <strong class="text-2">#{adminDashboardBean.selectedProfileForAction.fullName}</strong> 
+                                (Ref: <code class="code-chip">#{adminDashboardBean.selectedProfileForAction.trackingCode}</code>)
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="text-2" style="font-size: 0.82rem; margin-bottom: 1.25rem;">
+                        Cancelling will transition this applicant's profile to <strong class="text-strong">Verification Cancelled</strong> 
+                        and dispatch an automated email notifying them of the specific rejection rationale.
+                    </p>
+
+                    <div class="form-group">
+                        <h:outputLabel styleClass="form-label" for="modalRejectionReason" value="Cancellation Reason (Mandatory) *" />
+                        <h:inputTextarea id="modalRejectionReason" value="#{adminDashboardBean.rejectionReason}" 
+                                         styleClass="form-textarea" rows="4" 
+                                         required="true"
+                                         requiredMessage="Please provide a clear cancellation reason for the applicant."
+                                         placeholder="State the reason for denial (e.g. Identity document expired, mismatching name, unreadable scan)..." />
+                        <h:message for="modalRejectionReason" styleClass="field-error" />
+                    </div>
+
+                    <div class="modal-actions">
+                        <h:commandButton value="Dismiss" action="#{adminDashboardBean.closeRejectModal}" 
+                                         styleClass="btn btn-secondary">
+                            <f:ajax execute="@this" render=":rejectModalForm" />
+                        </h:commandButton>
+
+                        <h:commandButton value="Confirm Cancellation and Notify User" 
+                                         action="#{adminDashboardBean.confirmReject}" 
+                                         styleClass="btn btn-danger">
+                            <f:ajax execute="@form" render=":rejectModalForm :adminPendingForm :adminHistoryForm :adminStatsForm :adminEmailForm :globalMessages" />
+                        </h:commandButton>
+                    </div>
+                </div>
+            </h:panelGroup>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+</html>

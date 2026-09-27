@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><ui:insert name="title">Verif | Profile Verification System</ui:insert></title>
+
+    <!-- Lightweight Optimized CSS Assets (< 25 KB Total) -->
+    <h:outputStylesheet name="css/bento.css" />
+    <h:outputStylesheet name="css/theme.css" />
+    <h:outputStylesheet name="css/loader.css" />
+
+    <!-- Google Fonts Preconnect for Optimal Latency -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+</h:head>
+
+<h:body>
+    <!-- Full-Page Screen Loading UI Component -->
+    <ui:include src="/WEB-INF/templates/loader.xhtml" />
+
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="navbar">
+            <h:link outcome="/index.xhtml" styleClass="brand-logo">
+                <div class="brand-emblem-wrapper">
+                    <svg class="brand-emblem-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="shieldGrad" x1="4" y1="3" x2="32" y2="33" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#27272A" />
+                                <stop offset="50%" stop-color="#131316" />
+                                <stop offset="100%" stop-color="#09090B" />
+                            </linearGradient>
+                            <linearGradient id="borderGrad" x1="2" y1="2" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FAFAFA" />
+                                <stop offset="45%" stop-color="#A1A1AA" />
+                                <stop offset="100%" stop-color="#34D399" />
+                            </linearGradient>
+                            <linearGradient id="checkGrad" x1="10" y1="12" x2="27" y2="25" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FFFFFF" />
+                                <stop offset="35%" stop-color="#D4D4D8" />
+                                <stop offset="100%" stop-color="#34D399" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Aerodynamic Cyber Shield -->
+                        <path d="M18 3.5L7 8.2V16.8C7 23.9 11.7 30.5 18 32.5C24.3 30.5 29 23.9 29 16.8V8.2L18 3.5Z" 
+                              fill="url(#shieldGrad)" stroke="url(#borderGrad)" stroke-width="1.6" stroke-linejoin="round" />
+                        <!-- Stylized Geometric V with Checkmark Sweep -->
+                        <path d="M11 14.5L16.2 23.2C16.6 23.9 17.6 23.9 18 23.2L25.8 11.5" 
+                              stroke="url(#checkGrad)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                        <!-- Radiant Verification Crest Node -->
+                        <circle cx="25.8" cy="11.5" r="1.6" fill="#34D399" />
+                    </svg>
+                </div>
+                <div class="brand-text-block">
+                    <span class="brand-title">VERIF</span>
+                    <span class="brand-subtitle">IDENTITY CLOUD</span>
+                </div>
+                <span class="brand-status-pill">
+                    <span class="brand-status-dot"></span>
+                    SECURE
+                </span>
+            </h:link>
+
+            <!-- Mobile / Tablet Navigation Toggler (Active @ ≤ 1024px) -->
+            <button type="button" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navDrawer" onclick="toggleNav(this);">
+                <span class="nav-toggle-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+
+            <nav id="navDrawer" class="nav-links" aria-label="Main navigation">
+                <h:link outcome="/index.xhtml" styleClass="nav-link #{view.viewId eq '/index.xhtml' ? 'active' : ''}">Overview</h:link>
+                <h:link outcome="/register.xhtml" styleClass="nav-link #{view.viewId eq '/register.xhtml' ? 'active' : ''}">Register Profile</h:link>
+                <h:link outcome="/status.xhtml" styleClass="nav-link #{view.viewId eq '/status.xhtml' ? 'active' : ''}">Status Tracker</h:link>
+                <h:link outcome="/admin/dashboard.xhtml" styleClass="nav-link btn btn-secondary btn-sm #{view.viewId eq '/admin/dashboard.xhtml' ? 'active' : ''}">Admin Portal</h:link>
+            </nav>
+        </header>
+
+        <!-- Global Alert & Flash Messages Panel -->
+        <div class="messages-container">
+            <h:messages id="globalMessages" globalOnly="true" 
+                        infoClass="ui-message ui-message-info" 
+                        errorClass="ui-message ui-message-error" 
+                        warnClass="ui-message ui-message-warn" />
+        </div>
+
+        <!-- Dynamic Page Body Content -->
+        <main>
+            <ui:insert name="content">
+                <!-- Page specific Bento cards will be injected here -->
+            </ui:insert>
+        </main>
+
+        <!-- App Footer -->
+        <footer class="app-footer">
+            <p><strong>Verif</strong> © 2026. Fully proprietary identity verification architecture. Strictly licensed and copyrighted.</p>
+            <p class="footer-subline">Engineered with JavaServer Faces, Spring Boot, and MySQL.</p>
+        </footer>
+    </div>
+
+    <!-- Client-Side Loading Script & JSF Ajax Hooks -->
+    <h:outputScript name="js/app.js" />
+</h:body>
+</html>

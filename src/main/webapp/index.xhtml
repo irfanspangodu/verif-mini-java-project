@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Verif | Autonomous Identity Verification System</ui:define>
+
+    <ui:define name="content">
+        <!-- Bento Grid Formation Layout -->
+        <div class="bento-grid">
+
+            <!-- Bento Card 1: Hero Banner (Col 8) -->
+            <div class="bento-card col-8">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="bento-title" style="font-size: 1.5rem;">Autonomous Profile Verification</h1>
+                            <p class="bento-subtitle">Enterprise-grade cryptographic verification platform powered by pure Java</p>
+                        </div>
+                    </div>
+                    <span class="badge badge-verified">
+                        <span class="badge-dot"></span> System Live
+                    </span>
+                </div>
+
+                <p class="text-2" style="font-size: 0.95rem; margin-bottom: 2rem; max-width: 620px;">
+                    Verif streamlines applicant identity authentication through automated document validation, 
+                    instant real-time status tracking, and strict administrative verification workflows backed by MySQL persistence.
+                </p>
+
+                <div style="display: flex; gap: 1rem; align-items: center; margin-top: auto;">
+                    <h:link outcome="/register.xhtml" styleClass="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="8.5" cy="7.5" r="4"/>
+                            <line x1="20" y1="8" x2="20" y2="14"/>
+                            <line x1="23" y1="11" x2="17" y2="11"/>
+                        </svg>
+                        Register New Profile
+                    </h:link>
+
+                    <h:link outcome="/status.xhtml" styleClass="btn btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        Track Status
+                    </h:link>
+                </div>
+            </div>
+
+            <!-- Bento Card 2: Security & Encryption Badge (Col 4) -->
+            <div class="bento-card col-4">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon icon-box-ok">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="bento-title">Cryptographic Safety</h2>
+                            <p class="bento-subtitle">SHA-256 Hashing</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm" style="color: var(--v-text-2); margin-bottom: 1.5rem;">
+                    All submitted identity credentials are secured with end-to-end audit logging and strict role-based verification controls.
+                </p>
+
+                <div class="inner-well" style="margin-top: auto;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.4rem;">
+                        <span style="color: var(--v-text-4);">Data Integrity</span>
+                        <span style="color: var(--v-ok); font-weight: 600;">100% Guaranteed</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                        <span style="color: var(--v-text-4);">Database Engine</span>
+                        <span style="color: var(--v-text); font-weight: 600;">MySQL 8.0+</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Card 3: Quick Registration Action (Col 4) -->
+            <div class="bento-card col-4">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon">01</div>
+                        <div>
+                            <h2 class="bento-title">1. Submit Profile</h2>
+                            <p class="bento-subtitle">Fast and intuitive</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm" style="color: var(--v-text-2); margin-bottom: 1.5rem;">
+                    Enter your personal and identity document details. Receive an immediate <strong>Verification Pending</strong> tracking token upon submission.
+                </p>
+                <h:link outcome="/register.xhtml" styleClass="btn btn-secondary btn-sm" style="margin-top: auto; width: 100%;">
+                    Start Submission →
+                </h:link>
+            </div>
+
+            <!-- Bento Card 4: Administrative Review (Col 4) -->
+            <div class="bento-card col-4">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon icon-box-warn">02</div>
+                        <div>
+                            <h2 class="bento-title">2. Admin Review</h2>
+                            <p class="bento-subtitle">Rigorous validation</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm" style="color: var(--v-text-2); margin-bottom: 1.5rem;">
+                    Staff inspect credentials through the real-time Bento command center, approving legitimate profiles or cancelling with explicit feedback.
+                </p>
+                <h:link outcome="/admin/dashboard.xhtml" styleClass="btn btn-secondary btn-sm" style="margin-top: auto; width: 100%;">
+                    Open Admin Portal →
+                </h:link>
+            </div>
+
+            <!-- Bento Card 5: Instant Notification System (Col 4) -->
+            <div class="bento-card col-4">
+                <div class="bento-header">
+                    <div class="bento-title-group">
+                        <div class="bento-icon icon-box-ok">03</div>
+                        <div>
+                            <h2 class="bento-title">3. Real-Time Alert</h2>
+                            <p class="bento-subtitle">Live email dispatch</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm" style="color: var(--v-text-2); margin-bottom: 1.5rem;">
+                    Both applicant and administrator receive automated email notifications at each milestone: pending receipt, approval, or cancellation.
+                </p>
+                <h:link outcome="/admin/dashboard.xhtml" styleClass="btn btn-secondary btn-sm" style="margin-top: auto; width: 100%;">
+                    View Live Email Outbox →
+                </h:link>
+            </div>
+
+            <!-- Bento Card 6: Architecture Spec (Col 12) -->
+            <div class="bento-card col-12" style="background: linear-gradient(180deg, var(--v-surface-2) 0%, var(--v-surface) 100%);">
+                <div class="bento-header">
+                    <div>
+                        <h2 class="bento-title">Enterprise Architecture Highlights</h2>
+                        <p class="bento-subtitle">Pure Java Full-Stack Implementation</p>
+                    </div>
+                    <span class="badge" style="background: var(--v-accent-soft); color: var(--v-text); border: 1px solid var(--v-border-strong);">
+                        100% Java and Jakarta Faces
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                    <div>
+                        <h3 class="text-strong" style="font-size: 0.9rem; margin-bottom: 0.35rem;">JavaServer Faces (JSF)</h3>
+                        <p class="text-2" style="font-size: 0.8rem;">Component-driven view logic using Jakarta Faces 4.0 Facelets XHTML templates with Ajax lifecycle management.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-strong" style="font-size: 0.9rem; margin-bottom: 0.35rem;">Bento Grid Layout</h3>
+                        <p class="text-2" style="font-size: 0.8rem;">Precision-crafted responsive Bento tiles optimized to remain strictly under the KB size boundary.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-strong" style="font-size: 0.9rem; margin-bottom: 0.35rem;">MySQL Persistence</h3>
+                        <p class="text-2" style="font-size: 0.8rem;">Hibernate and Spring Data JPA relational mapping ensuring atomic ACID transactions and audit integrity.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-strong" style="font-size: 0.9rem; margin-bottom: 0.35rem;">Full-Page Screen Loader</h3>
+                        <p class="text-2" style="font-size: 0.8rem;">Integrated progress overlay tied to user-initiated JSF Ajax events for responsive visual feedback.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </ui:define>
+
+</ui:composition>
+</html>

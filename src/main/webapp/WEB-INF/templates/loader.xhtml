@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition>
+    <!-- Full-Page Screen Loading UI Component -->
+    <div id="verif-screen-loader" aria-live="polite" aria-label="Loading verification screen">
+        <div class="loader-content">
+            <div class="loader-brand-container">
+                <div class="loader-glow-ring"></div>
+                <div class="loader-brand-emblem">
+                    <svg class="loader-emblem-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="loaderShieldGrad" x1="4" y1="3" x2="32" y2="33" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#27272A" />
+                                <stop offset="50%" stop-color="#131316" />
+                                <stop offset="100%" stop-color="#09090B" />
+                            </linearGradient>
+                            <linearGradient id="loaderBorderGrad" x1="2" y1="2" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FAFAFA" />
+                                <stop offset="45%" stop-color="#A1A1AA" />
+                                <stop offset="100%" stop-color="#34D399" />
+                            </linearGradient>
+                            <linearGradient id="loaderCheckGrad" x1="10" y1="12" x2="27" y2="25" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FFFFFF" />
+                                <stop offset="35%" stop-color="#D4D4D8" />
+                                <stop offset="100%" stop-color="#34D399" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Aerodynamic Cyber Shield -->
+                        <path d="M18 3.5L7 8.2V16.8C7 23.9 11.7 30.5 18 32.5C24.3 30.5 29 23.9 29 16.8V8.2L18 3.5Z" 
+                              fill="url(#loaderShieldGrad)" stroke="url(#loaderBorderGrad)" stroke-width="1.6" stroke-linejoin="round" />
+                        <!-- Stylized Geometric V with Checkmark Sweep -->
+                        <path d="M11 14.5L16.2 23.2C16.6 23.9 17.6 23.9 18 23.2L25.8 11.5" 
+                              stroke="url(#loaderCheckGrad)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                        <!-- Radiant Verification Crest Node -->
+                        <circle cx="25.8" cy="11.5" r="1.6" fill="#34D399" />
+                    </svg>
+                </div>
+            </div>
+            <h2 class="loader-title">VERIF ENGINE</h2>
+            <p class="loader-status-text">Processing verification data...</p>
+            <div class="loader-progress-track">
+                <div class="loader-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+</ui:composition>
+</html>

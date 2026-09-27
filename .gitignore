@@ -1,0 +1,47 @@
+# ====================================================================
+# .gitignore - Verif Profile Verification System
+# ====================================================================
+# CRITICAL SECURITY NOTICE:
+# Never commit database credentials, API keys, private certificates,
+# or production configuration overrides to public or shared repositories.
+# ====================================================================
+
+# Sensitive Credentials & Local Overrides
+application-local.properties
+application-production.properties
+application-mysql-credentials.properties
+*.env
+*.key
+*.pem
+*.pfx
+
+# Compiled Output & Build Artifacts
+target/
+*.war
+*.jar
+*.ear
+*.class
+
+# Log files
+*.log
+logs/
+
+# IDE Configuration & Workspace Metadata
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS-Specific Metadata Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary local tools & cache
+.tools/
+scratch/

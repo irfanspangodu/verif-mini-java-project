@@ -1,0 +1,167 @@
+/* ==========================================================================
+   VERIF - Bento Grid Formation Layout (Lightweight: < 6 KB)
+   ========================================================================== */
+
+:root {
+  --bento-gap: 1.25rem;
+  --bento-radius: 18px;
+  --bento-bg: rgba(12, 12, 15, 0.72);
+  --bento-border: rgba(255, 255, 255, 0.08);
+  --bento-border-hover: rgba(255, 255, 255, 0.22);
+  --bento-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --bento-glow: 0 0 26px rgba(255, 255, 255, 0.06);
+}
+
+/* Master Bento Grid Container */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--bento-gap);
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/*
+   Bento cards that appear OUTSIDE a .bento-grid container (e.g. standalone
+   notification banners) should still span their parent. Without this, the
+   col-12 rule "grid-column: span 12" is meaningless outside a grid context,
+   and the card inherits a fixed width from flex parents.
+*/
+.col-12, .col-8, .col-7, .col-6, .col-5, .col-4, .col-3 {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Core Bento Card */
+.bento-card {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bento-bg);
+  border: 1px solid var(--bento-border);
+  border-radius: var(--bento-radius);
+  padding: 1.75rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--bento-shadow);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ambient Radial Glow on Hover */
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  pointer-events: none;
+  border-radius: var(--bento-radius) var(--bento-radius) 0 0;
+}
+
+.bento-card:hover {
+  border-color: var(--bento-border-hover);
+  box-shadow: var(--bento-shadow), var(--bento-glow);
+  transform: translateY(-2px);
+}
+
+/* Bento Column Spans — applied only inside a bento grid */
+.bento-grid .col-12 { grid-column: span 12; }
+.bento-grid .col-8  { grid-column: span 8; }
+.bento-grid .col-7  { grid-column: span 7; }
+.bento-grid .col-6  { grid-column: span 6; }
+.bento-grid .col-5  { grid-column: span 5; }
+.bento-grid .col-4  { grid-column: span 4; }
+.bento-grid .col-3  { grid-column: span 3; }
+
+/* Bento Row Spans */
+.bento-grid .row-span-2 { grid-row: span 2; }
+
+/* Bento Header Area */
+.bento-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bento-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.bento-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.10);
+  color: #FAFAFA;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.bento-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #FAFAFA;
+  margin: 0;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.bento-subtitle {
+  font-size: 0.8rem;
+  color: #A1A1AA;
+  margin: 0.15rem 0 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* Responsive Breakpoints — tablet: collapse mid-size spans to full */
+@media (max-width: 1024px) {
+  .bento-grid .col-8,
+  .bento-grid .col-7,
+  .bento-grid .col-6,
+  .bento-grid .col-5 { grid-column: span 12; }
+  .bento-grid .col-4,
+  .bento-grid .col-3 { grid-column: span 6; }
+}
+
+/* Responsive Breakpoints — mobile (<= 640px): single column + shrink padding */
+@media (max-width: 640px) {
+  .bento-grid .col-4,
+  .bento-grid .col-3,
+  .bento-grid .col-5,
+  .bento-grid .col-6,
+  .bento-grid .col-7,
+  .bento-grid .col-8,
+  .bento-grid .col-12 { grid-column: span 12; }
+  .bento-card { padding: 1.25rem; border-radius: 14px; }
+  :root { --bento-gap: 0.9rem; }
+  .bento-icon { width: 36px; height: 36px; border-radius: 9px; font-size: 1rem; }
+}
+
+/* Responsive Breakpoints — very small phones (<= 380px): further compact */
+@media (max-width: 380px) {
+  .bento-card { padding: 1rem; border-radius: 12px; }
+  :root { --bento-gap: 0.75rem; }
+  .bento-title { font-size: 0.98rem; }
+}
