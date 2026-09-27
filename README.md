@@ -11,7 +11,7 @@
 > [!CAUTION]
 > **CRITICAL SECURITY DIRECTIVE: DATABASE CREDENTIALS & SENSITIVE SECRETS**
 > 
-> - **NEVER commit sensitive credentials**—including MySQL database passwords, SMTP credentials, TLS private keys, or API tokens—to public or shared version control repositories (e.g., GitHub, GitLab, Bitbucket).
+> - **NEVER commit sensitive credentials**including MySQL database passwords, SMTP credentials, TLS private keys, or API tokens to public or shared version control repositories (e.g., GitHub, GitLab, Bitbucket).
 > - All sensitive configurations must be kept strictly local and excluded using the project's [`.gitignore`](file:///c:/Users/DELL/Documents/java/verif/.gitignore).
 > - For production and staging environments, supply credentials exclusively via secure environment variables (`MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DB`, `MAIL_USERNAME`, `MAIL_PASSWORD`) or an uncommitted `application-local.properties` file.
 > - Verify that `git status` does not list files containing plain-text passwords before staging any commit.
