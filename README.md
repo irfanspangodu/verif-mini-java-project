@@ -1,4 +1,4 @@
-﻿# Verif — Enterprise Profile Verification System
+﻿# Verif | Enterprise Profile Verification System
 
 > **Proprietary & Copyrighted Software**  
 > **Copyright &copy; 2026 Verif Technologies Inc. All Rights Reserved.**  
